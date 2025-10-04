@@ -1,6 +1,8 @@
 import { ChatGroq } from "@langchain/groq";
 import { createEventTool, getEventTool } from "./tools";
-
+import { END, MemorySaver, MessagesAnnotation, StateGraph } from '@langchain/langgraph';
+import { ToolNode } from "@langchain/langgraph/prebuilt";
+import type { AIMessage } from "@langchain/core/messages";
 const tools : any[] = [createEventTool, getEventTool];
 
 //add GROQ_API_KEY in env file
@@ -9,3 +11,53 @@ const model = new ChatGroq({
     temperature: 0
 }).bindTools(tools);
 
+// Assistant node
+async function callModel(state: typeof MessagesAnnotation.State) {
+    const response = await model.invoke(state.messages);
+    return { messages: [response] };
+}
+
+//Tool Node
+const toolNode = new ToolNode(tools);
+
+// Conditional Edge
+function shouldContinue(state: typeof MessagesAnnotation.State) {
+    //check the previous/last message from ai, if it has tool calls then go to tools node else end the graph
+    const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
+    if (lastMessage.tool_calls?.length) { //if tool calls are present in the last message of LLM/AI
+        return 'tools';
+    }
+    return '__end__';
+}
+
+// Build the graph
+const graph = new StateGraph(MessagesAnnotation)
+    .addNode('assistant', callModel)
+    .addNode('tools', toolNode)
+    .addEdge('__start__', 'assistant')
+    .addEdge('tools', 'assistant')
+    .addConditionalEdges('assistant', shouldContinue, {
+        __end__: END,
+        tools: 'tools',
+    });
+
+
+// adding Memory as checkpointer to save the past messages
+const checkpointer = new MemorySaver();
+//making the graph runnable by compiling it & passing the checkpointer(memory) to save the past messages
+const app = graph.compile({ checkpointer });   //checkpointer will save the past messages in thee memory
+
+
+async function main() {
+    let config = { configurable: { thread_id: '1' } };
+     //invoking the graph with initial message
+        const result = await app.invoke(
+            {
+                messages: [{ role: 'user', content: "Hi, Create a meeting with sujoy dated 10/10/2026" }],
+            }, 
+            config
+        );
+        console.log('AI: ', result.messages[result.messages.length - 1].content);
+}
+
+main()
