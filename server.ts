@@ -24,8 +24,13 @@ app.get("/auth", async (req, res) => {
         // If you only need one scope, you can pass it as a string
         scope: scopes
     });
+    console.log('url', url);
     res.redirect(url);
 })
+
+// Once we call '/auth' endpoint, it will redirect to google login page, once we login & allow the permissions, it will redirect to '/callback' endpoint
+// In the callback endpoint we will get the code in the query params, we will exchange that code with access token & refresh token
+// After getting the tokens we can use the access token to create events in google calendar.
 
 app.get("/callback", async (req, res) => {
     const code = req.query.code as string;
