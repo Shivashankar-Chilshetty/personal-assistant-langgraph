@@ -13,9 +13,9 @@ oauth2Client.setCredentials(tokens);
 
 // Create a new Calendar API client.
 const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
+//params type which we will get from the LLM
 type Params = {
-    q: string;
+    q: string;   //query string to search the events based on summary, description, location, attendees display name, attendees email, organiser's name, organiser's email
     timeMin: string;
     timeMax: string;
 };
@@ -32,8 +32,8 @@ export const getEventTool = tool(
                 timeMin,
                 timeMax,
                 maxResults: 10,
-                singleEvents: true,
-                orderBy: 'startTime',
+                //singleEvents: true,
+                //orderBy: 'startTime',
             });
             //console.log('Response', response.data); // Log the entire response object to see its structure
             const result = response.data.items?.map((event) => {
@@ -50,9 +50,8 @@ export const getEventTool = tool(
                     eventType: event.eventType,
                 };
             });
-            console.log('Events:', result); 
+            //console.log('Events:', result);
             if (!result || result.length === 0) {
-                console.log('No upcoming events found.');
                 return 'No upcoming events found.';
             }
             return JSON.stringify(result);
@@ -76,17 +75,77 @@ export const getEventTool = tool(
     }
 );
 
+type attendee = {
+    email: string;
+    displayName: string;
+};
+
+const createEventSchema = z.object({
+    summary: z.string().describe('The title of the event'),
+    start: z.object({
+        dateTime: z.string().describe('The start date time of the event in UTC'),
+        timeZone: z.string().describe('The timezone of the event time in UTC'),
+    }),
+    end: z.object({
+        dateTime: z.string().describe('The end date time of the event in UTC'),
+        timeZone: z.string().describe('The timezone of the event time in UTC'),
+    }),
+    attendees: z.array(
+        z.object({
+            email: z.string().describe('The email of the attendee'),
+            displayName: z.string().describe('Then name of the attendee.'),
+        })
+    ),
+});
+
+type EventData = z.infer<typeof createEventSchema>;
+// type EventData = {
+//     summary: string;
+//     start: {
+//         dateTime: string;
+//         timeZone: string;
+//     };
+//     end: {
+//         dateTime: string;
+//         timeZone: string;
+//     };
+//     attendees: attendee[];
+// };
+
 export const createEventTool = tool(
-    async () => {
+    async (eventData) => {
+        const { summary, start, end, attendees } = eventData as EventData;
         // Google calendar logic goes
-        return 'Meeting has been created';
+        const response = await calendar.events.insert({
+            calendarId: 'primary',
+            sendUpdates: 'all', // Send email notifications to all attendees about the event creation.
+            conferenceDataVersion: 1, // Enable conference data (attaches Google Meet link to the calendar event)
+            requestBody: {
+                summary,
+                start,
+                end,
+                attendees,
+                conferenceData: {         // To create a Google Meet link
+                    createRequest: {
+                        requestId: crypto.randomUUID(),
+                        conferenceSolutionKey: {
+                            type: 'hangoutsMeet', // Google Meet
+                        },
+                    },
+                },
+            },
+        });
+        console.log('Create Event Response', response.data);
+        if (response.statusText === 'OK') {
+            return 'The meeting has been created.';
+        }
+
+        return "Couldn't create a meeting.";
     },
     {
         name: 'create-event',
-        description: 'Call to create a calendar event.',
-        schema: z.object({
-            query: z.string().describe('The query to be used to create event from google calender')
-        })
+        description: 'Call to create the calendar events.',
+        schema: createEventSchema, //expected params type from LLM
     }
 );
 
