@@ -53,7 +53,7 @@ async function main() {
      //invoking the graph with initial message
         const result = await app.invoke(
             {
-                messages: [{ role: 'user', content: "Hi, Create a meeting with sujoy dated 10/10/2026" }],
+                messages: [{ role: 'user', content: "Hi, Do i have any meeting today ?" }],
             }, 
             config
         );
