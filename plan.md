@@ -11,4 +11,4 @@
 [v] Terminal UI
 [v] Add the memory
 [v] Fix time zone
-[] Move secrets into .env
+[v] Move secrets into .env

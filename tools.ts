@@ -1,15 +1,18 @@
 import { tool } from '@langchain/core/tools';
 import { google } from 'googleapis';
 import { z } from 'zod';
-import tokens from './tokens.json';
 
+// OAuth2 client setup
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
     process.env.GOOGLE_REDIRECT_URL
 );
 
-oauth2Client.setCredentials(tokens);
+oauth2Client.setCredentials({
+    access_token: process.env.GOOGLE_ACCESS_TOKEN,
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+});
 
 // Create a new Calendar API client.
 const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
