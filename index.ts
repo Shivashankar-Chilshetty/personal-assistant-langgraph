@@ -59,20 +59,33 @@ async function main() {
         if (userInput === '/bye') {
             break;
         }
+        //getting the current date time in ISO format
+        const currentDateTime = new Date().toLocaleString('sv-SE').replace(' ', 'T');
+        //getting the current timezone string
+        const timeZoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
         //invoking the graph with initial message
         const result = await app.invoke(
             {
-                messages: [{
-                    role: 'user',
-                    content: userInput
-                    //"Can you create a meeting with MS Dhoni(msd@gmail.com) at 4PM today about Backend discussion?"
-                    //content: "Hi, Do i have any meeting today ?" 
-                }],
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are a smart personal assistant of Shiva(GENAI - full stack Javascript developer), Your name is Jarvis. You are build to help Shiva in managing his daily schedules & TODO tasks. 
+                        Current datetime: ${currentDateTime}
+                        Current timezone string: ${timeZoneString}`,
+                    },
+                    {
+                        role: 'user',
+                        content: userInput
+                        //"Can you create a meeting with MS Dhoni(msd@gmail.com) at 4PM today about Backend discussion?"
+                        //content: "Hi, Do i have any meeting today ?" 
+                    }
+                ],
             },
             config
         );
         console.log('AI: ', result.messages[result.messages.length - 1].content);
     }
+    rl.close();
 }
 
 main();

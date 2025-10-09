@@ -83,12 +83,12 @@ type attendee = {
 const createEventSchema = z.object({
     summary: z.string().describe('The title of the event'),
     start: z.object({
-        dateTime: z.string().describe('The start date time of the event in UTC'),
-        timeZone: z.string().describe('The timezone of the event time in UTC'),
+        dateTime: z.string().describe('The date time of start of the event.'),
+        timeZone: z.string().describe('Current IANA timezone string.'),
     }),
     end: z.object({
-        dateTime: z.string().describe('The end date time of the event in UTC'),
-        timeZone: z.string().describe('The timezone of the event time in UTC'),
+        dateTime: z.string().describe('The date time of end of the event.'),
+        timeZone: z.string().describe('Current IANA timezone string.'),
     }),
     attendees: z.array(
         z.object({

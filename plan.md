@@ -9,5 +9,6 @@
     [v] create events
 [v] Test the agent
 [v] Terminal UI
-[] Add the memory
-
+[v] Add the memory
+[v] Fix time zone
+[] Move secrets into .env
