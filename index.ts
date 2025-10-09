@@ -1,9 +1,12 @@
+import readline from 'node:readline/promises';
 import { ChatGroq } from "@langchain/groq";
 import { createEventTool, getEventTool } from "./tools";
 import { END, MemorySaver, MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import type { AIMessage } from "@langchain/core/messages";
-const tools : any[] = [createEventTool, getEventTool];
+
+// Define the tools array
+const tools: any[] = [createEventTool, getEventTool];
 
 //add GROQ_API_KEY in env file
 const model = new ChatGroq({
@@ -50,18 +53,26 @@ const app = graph.compile({ checkpointer });   //checkpointer will save the past
 
 async function main() {
     let config = { configurable: { thread_id: '1' } };
-     //invoking the graph with initial message
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    while (true) {
+        const userInput = await rl.question('You: ');
+        if (userInput === '/bye') {
+            break;
+        }
+        //invoking the graph with initial message
         const result = await app.invoke(
             {
-                messages: [{ 
-                role: 'user', 
-                content: "Can you create a meeting with MS Dhoni(msd@gmail.com) at 4PM today about Backend discussion?"
-                //content: "Hi, Do i have any meeting today ?" 
-            }],
-            }, 
+                messages: [{
+                    role: 'user',
+                    content: userInput
+                    //"Can you create a meeting with MS Dhoni(msd@gmail.com) at 4PM today about Backend discussion?"
+                    //content: "Hi, Do i have any meeting today ?" 
+                }],
+            },
             config
         );
         console.log('AI: ', result.messages[result.messages.length - 1].content);
+    }
 }
 
-main()
+main();

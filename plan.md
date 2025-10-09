@@ -6,8 +6,8 @@
 [v] Build the graph
 [] Implement the tools - Connect to google calendar
     [v] get events
-    [] create events
-[] Test the agent
-[] Terminal UI
+    [v] create events
+[v] Test the agent
+[v] Terminal UI
 [] Add the memory
 
