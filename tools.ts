@@ -1,6 +1,8 @@
 import { tool } from '@langchain/core/tools';
 import { google } from 'googleapis';
 import { z } from 'zod';
+import { TavilySearch } from '@langchain/tavily';
+
 
 // OAuth2 client setup
 const oauth2Client = new google.auth.OAuth2(
@@ -13,6 +15,12 @@ oauth2Client.setCredentials({
     access_token: process.env.GOOGLE_ACCESS_TOKEN,
     refresh_token: process.env.GOOGLE_REFRESH_TOKEN
 });
+
+export const search = new TavilySearch({
+    maxResults: 3,
+    topic: 'general',
+});
+
 
 // Create a new Calendar API client.
 const calendar = google.calendar({ version: 'v3', auth: oauth2Client });

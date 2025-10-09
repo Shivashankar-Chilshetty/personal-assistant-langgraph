@@ -7,6 +7,7 @@
         "@langchain/core": "^0.3.78",
         "@langchain/groq": "^0.2.4",
         "@langchain/langgraph": "^0.4.9",
+        "@langchain/tavily": "^0.1.5",
         "express": "^5.1.0",
         "googleapis": "^161.0.0",
         "npm": "^11.6.1",
@@ -33,6 +34,8 @@
     "@langchain/langgraph-checkpoint": ["@langchain/langgraph-checkpoint@0.1.1", "", { "dependencies": { "uuid": "^10.0.0" }, "peerDependencies": { "@langchain/core": ">=0.2.31 <0.4.0 || ^1.0.0-alpha" } }, "sha512-h2bP0RUikQZu0Um1ZUPErQLXyhzroJqKRbRcxYRTAh49oNlsfeq4A3K4YEDRbGGuyPZI/Jiqwhks1wZwY73AZw=="],
 
     "@langchain/langgraph-sdk": ["@langchain/langgraph-sdk@0.1.9", "", { "dependencies": { "@types/json-schema": "^7.0.15", "p-queue": "^6.6.2", "p-retry": "4", "uuid": "^9.0.0" }, "peerDependencies": { "@langchain/core": ">=0.2.31 <0.4.0 || ^1.0.0-alpha", "react": "^18 || ^19", "react-dom": "^18 || ^19" }, "optionalPeers": ["@langchain/core", "react", "react-dom"] }, "sha512-7WEDHtbI3pYPUiiHq+dPaF92ZN2W7lqObdpK0X+roa8zPdHUjve/HiqYuKNWS12u1N+L5QIuQWqZvVNvUA7BfQ=="],
+
+    "@langchain/tavily": ["@langchain/tavily@0.1.5", "", { "dependencies": { "zod": "^3.25.32" }, "peerDependencies": { "@langchain/core": ">=0.3.58 <0.4.0" } }, "sha512-6C8hb3d6YjlGJPdPFfaNlrUS0h6blQx4cRzCKeDdCvixcghzV8llAmuzvJSmAyALprFfvKtj+1NJb4ttj1iZ/A=="],
 
     "@types/body-parser": ["@types/body-parser@1.19.6", "", { "dependencies": { "@types/connect": "*", "@types/node": "*" } }, "sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g=="],
 
@@ -343,6 +346,8 @@
     "@langchain/langgraph/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "@langchain/langgraph-sdk/uuid": ["uuid@9.0.1", "", { "bin": { "uuid": "dist/bin/uuid" } }, "sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA=="],
+
+    "@langchain/tavily/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "chalk/ansi-styles": ["ansi-styles@4.3.0", "", { "dependencies": { "color-convert": "^2.0.1" } }, "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg=="],
 

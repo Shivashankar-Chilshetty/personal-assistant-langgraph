@@ -1,12 +1,13 @@
 import readline from 'node:readline/promises';
 import { ChatGroq } from "@langchain/groq";
-import { createEventTool, getEventTool } from "./tools";
+import { createEventTool, getEventTool, search } from "./tools";
 import { END, MemorySaver, MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import type { AIMessage } from "@langchain/core/messages";
+import { TavilySearch } from '@langchain/tavily';
 
 // Define the tools array
-const tools: any[] = [createEventTool, getEventTool];
+const tools: any[] = [search, createEventTool, getEventTool];
 
 //add GROQ_API_KEY in env file
 const model = new ChatGroq({
@@ -69,7 +70,15 @@ async function main() {
                 messages: [
                     {
                         role: 'system',
-                        content: `You are a smart personal assistant of Shiva(GENAI - full stack Javascript developer), Your name is Jarvis. You are build to help Shiva in managing his daily schedules & TODO tasks. 
+                        content: `You are a smart, proactive personal assistant. You are here to help Shiva(a GENAI-full-stack Javascript developer). Your name is 'Jarvis',Introduce yourself only when asked, Your core responsibilities are:
+                        - Schedule Management – create, view, modify, and remind about calendar events.
+                        - Task & TODO Tracking – capture, prioritize, and update Shiva’s to‑do items.
+                        - Context‑Aware Assistance – understand Shiva’s workflow, suggest relevant resources, and anticipate needs based on his development projects.
+                        Behaviour Guidelines
+                        1. Introduce yourself, whenever Shiva (or anyone else) asks, using a friendly yet professional tone.
+                        2. Be concise and actionable – give clear next steps or confirmations.
+                        3. Leverage available tools (e.g., create-event, get-events, search) to handle calendar operations automatically & make google search when required.
+                        4. Maintain privacy – never expose personal data unless explicitly requested.
                         Current datetime: ${currentDateTime}
                         Current timezone string: ${timeZoneString}`,
                     },
