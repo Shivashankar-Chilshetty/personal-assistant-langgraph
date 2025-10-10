@@ -1,13 +1,13 @@
 import readline from 'node:readline/promises';
 import { ChatGroq } from "@langchain/groq";
-import { createEventTool, getEventTool, search } from "./tools";
+import { createEventTool, getEventTool, search, updateEventTool } from "./tools";
 import { END, MemorySaver, MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import type { AIMessage } from "@langchain/core/messages";
 import { TavilySearch } from '@langchain/tavily';
 
 // Define the tools array
-const tools: any[] = [search, createEventTool, getEventTool];
+const tools: any[] = [search, createEventTool, getEventTool, updateEventTool];
 
 //add GROQ_API_KEY in env file
 const model = new ChatGroq({
@@ -77,7 +77,7 @@ async function main() {
                         Behaviour Guidelines
                         1. Introduce yourself, whenever Shiva (or anyone else) asks, using a friendly yet professional tone.
                         2. Be concise and actionable – give clear next steps or confirmations.
-                        3. Leverage available tools (e.g., create-event, get-events, search) to handle calendar operations automatically & make google search when required.
+                        3. Leverage available tools (e.g., create-event, get-events, updateEvent, search) to handle calendar operations automatically & make google search when required.
                         4. Maintain privacy – never expose personal data unless explicitly requested.
                         Current datetime: ${currentDateTime}
                         Current timezone string: ${timeZoneString}`,

@@ -146,11 +146,19 @@ export const createEventTool = tool(
                 },
             },
         });
-        console.log('Create Event Response', response.data);
-        if (response.statusText === 'OK') {
-            return 'The meeting has been created.';
+        //console.log('Create Event Response', response.data);
+        // Return structured information so the caller (LLM) can store eventId for later updates
+        if (response.status === 200 || response.statusText === 'OK') {
+            const created = response.data;
+            const result = {
+                id: created.id,
+                summary: created.summary,
+                start: created.start,
+                end: created.end,
+                hangoutLink: created.hangoutLink || created.conferenceData?.entryPoints?.find((e: any) => e.entryPointType === 'video')?.uri,
+            };
+            return JSON.stringify(result);
         }
-
         return "Couldn't create a meeting.";
     },
     {
@@ -160,3 +168,108 @@ export const createEventTool = tool(
     }
 );
 
+const updateEventSchema = z.object({
+    eventId: z.string().optional(),
+    q: z.string().optional(),
+    timeMin: z.string().optional(),
+    timeMax: z.string().optional(),
+    summary: z.string().describe('The title of the event').optional(),
+    start: z.object({
+        dateTime: z.string().describe('The date time of start of the event.')
+        , timeZone: z.string().describe('The IANA timezone string.').optional()
+    }).optional(),
+    end: z.object({
+        dateTime: z.string().describe('The date time of end of the event.'),
+        timeZone: z.string().describe('The IANA timezone string.').optional()
+    }).optional(),
+    attendees: z.array(z.object({
+        email: z.string().describe('The email of the attendee'),
+        displayName: z.string().describe('Then name of the attendee.'),
+    })).optional(),
+});
+
+export const updateEventTool = tool(
+    async (params) => {
+        // Validate/parse input using zod schema
+        const data = updateEventSchema.parse(params);
+        let { eventId, q, timeMin, timeMax } = data as any;
+        // If no eventId provided, try to look up by query/time window
+        if (!eventId) {
+            if (!q && !timeMin && !timeMax) {
+                return 'Please provide eventId or at least a query/time window to find the event.';
+            }
+
+            try {
+                const listResp = await calendar.events.list({
+                    calendarId: 'primary',
+                    q,
+                    timeMin,
+                    timeMax,
+                    maxResults: 10,
+                });
+
+                const items = listResp.data.items || [];
+                if (items.length === 0) {
+                    return 'No matching events found for the given query/time window.';
+                }
+                if (items.length > 1) {
+                    // Return concise candidate list for disambiguation
+                    const candidates = items.map((it) => ({
+                        id: it.id,
+                        summary: it.summary,
+                        start: it.start,
+                        organizer: it.organizer,
+                    }));
+                    return JSON.stringify({ multipleMatches: true, candidates });
+                }
+
+                // Exactly one match
+                const first = items[0];
+                if (!first || !first.id) {
+                    return 'Found an event but it is missing an id.';
+                }
+                eventId = first.id as string;
+            } catch (err: any) {
+                console.log('Lookup error', err?.message ?? err);
+                return `Failed to search for event: ${err?.message ?? String(err)}`;
+            }
+        }
+
+        // Build requestBody with provided updatable fields
+        const requestBody: any = {};
+        if ('summary' in data && data.summary !== undefined) requestBody.summary = data.summary;
+        if ('start' in data && data.start !== undefined) requestBody.start = data.start;
+        if ('end' in data && data.end !== undefined) requestBody.end = data.end;
+        if ('attendees' in data && data.attendees !== undefined) requestBody.attendees = data.attendees;
+
+        if (Object.keys(requestBody).length === 0) {
+            return 'Nothing to update. Provide at least one updatable field (summary, start, end, attendees).';
+        }
+
+        try {
+            const response = await calendar.events.patch({
+                calendarId: 'primary',
+                eventId,
+                sendUpdates: 'all',
+                conferenceDataVersion: 1,
+                requestBody,
+            });
+
+            //console.log('Update Event Response', response.data);
+            if (response.status === 200 || response.statusText === 'OK') {
+                // Return updated event object so caller can confirm/follow-up
+                return JSON.stringify(response.data);
+            }
+
+            return "Couldn't update the meeting.";
+        } catch (err: any) {
+            //console.log('Update event error:', err?.message ?? err);
+            return `Failed to update event: ${err?.message ?? String(err)}`;
+        }
+    },
+    {
+        name: 'update-event',
+        description: 'Call to update the calendar events.',
+        schema: updateEventSchema,
+    }
+);
