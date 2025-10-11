@@ -273,3 +273,79 @@ export const updateEventTool = tool(
         schema: updateEventSchema,
     }
 );
+
+
+
+const deleteEventSchema = z.object({
+    eventId: z.string().optional(),
+    q: z.string().optional(),
+    timeMin: z.string().optional(),
+    timeMax: z.string().optional(),
+    sendUpdates: z.enum(['all', 'externalOnly', 'none']).optional(),
+});
+
+export const deleteEventTool = tool(
+    async (params) => {
+        const data = deleteEventSchema.parse(params);
+        let { eventId, q, timeMin, timeMax, sendUpdates } = data as any;
+
+        // If no eventId provided, try to look up by query/time window
+        if (!eventId) {
+            if (!q && !timeMin && !timeMax) {
+                return 'Please provide eventId or at least a query/time window to find the event to delete.';
+            }
+
+            try {
+                const listResp = await calendar.events.list({
+                    calendarId: 'primary',
+                    q,
+                    timeMin,
+                    timeMax,
+                    maxResults: 10,
+                });
+
+                const items = listResp.data.items || [];
+                if (items.length === 0) {
+                    return 'No matching events found for the given query/time window.';
+                }
+                if (items.length > 1) {
+                    const candidates = items.map((it) => ({
+                        id: it.id,
+                        summary: it.summary,
+                        start: it.start,
+                        organizer: it.organizer,
+                    }));
+                    return JSON.stringify({ multipleMatches: true, candidates });
+                }
+
+                const first = items[0];
+                if (!first || !first.id) {
+                    return 'Found an event but it is missing an id.';
+                }
+                eventId = first.id as string;
+            } catch (err: any) {
+                console.log('Lookup error', err?.message ?? err);
+                return `Failed to search for event: ${err?.message ?? String(err)}`;
+            }
+        }
+
+        // Proceed to delete/cancel the event
+        try {
+            await calendar.events.delete({
+                calendarId: 'primary',
+                eventId,
+                sendUpdates: sendUpdates ?? 'all',
+            });
+
+            return JSON.stringify({ deleted: true, id: eventId });
+        } catch (err: any) {
+            console.log('Delete error', err?.message ?? err);
+            return `Failed to delete event: ${err?.message ?? String(err)}`;
+        }
+    },
+    {
+        name: 'delete-event',
+        description: 'Call to delete/cancel the calendar event. If attendees exist, sendUpdates controls notifications.',
+        schema: deleteEventSchema,
+    }
+);

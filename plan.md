@@ -18,6 +18,5 @@
 
 [v] Improve the system prompt - Persona
 [v] Update/Patch calendar event tool
-[] Cancel the event tool
+[v] Cancel the event tool
 [] Add new tool - Contact tool to get the contacts / emails -- we can use: db/files/google excel to store contact details
-[] Add web search tool
