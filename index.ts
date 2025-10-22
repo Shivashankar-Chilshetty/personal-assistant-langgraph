@@ -1,6 +1,6 @@
 import readline from 'node:readline/promises';
 import { ChatGroq } from "@langchain/groq";
-import { createEventTool, deleteEventTool, getEventTool, search, updateEventTool } from "./tools";
+import { createEventTool, deleteEventTool, getEventTool, search, updateEventTool } from "./tools.ts";
 import { END, MemorySaver, MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import type { AIMessage } from "@langchain/core/messages";

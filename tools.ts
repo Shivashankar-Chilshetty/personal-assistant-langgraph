@@ -324,7 +324,7 @@ export const deleteEventTool = tool(
                 }
                 eventId = first.id as string;
             } catch (err: any) {
-                console.log('Lookup error', err?.message ?? err);
+                //console.log('Lookup error', err?.message ?? err);
                 return `Failed to search for event: ${err?.message ?? String(err)}`;
             }
         }
@@ -339,7 +339,7 @@ export const deleteEventTool = tool(
 
             return JSON.stringify({ deleted: true, id: eventId });
         } catch (err: any) {
-            console.log('Delete error', err?.message ?? err);
+            //console.log('Delete error', err?.message ?? err);
             return `Failed to delete event: ${err?.message ?? String(err)}`;
         }
     },
